@@ -1884,12 +1884,11 @@ int query_NPOT_capability( void )
 	if( has_NPOT_capability == SOIL_CAPABILITY_UNKNOWN )
 	{
 		/*	we haven't yet checked for the capability, do so	*/
-		if(
-			(NULL == strstr( (char const*)glGetString( GL_EXTENSIONS ),
-				"GL_ARB_texture_non_power_of_two" ) )
+		char const *ext = (char const*)glGetString( GL_EXTENSIONS );
+		if( ext &&
+			(NULL == strstr( ext, "GL_ARB_texture_non_power_of_two" ) )
 		&&
-			(NULL == strstr( (char const*)glGetString( GL_EXTENSIONS ),
-				"GL_OES_texture_npot" ) )
+			(NULL == strstr( ext, "GL_OES_texture_npot" ) )
 			)
 		{
 			/*	not there, flag the failure	*/
