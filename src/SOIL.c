@@ -14,6 +14,15 @@
 */
 
 #define SOIL_CHECK_FOR_GL_ERRORS 0
+#define SOIL_USEGLTEXSUBIMAGE2D 1
+
+#ifdef SOIL_USEGLTEXSUBIMAGE2D
+#define SOIL_glTexImage2D( target, level, internalformat, width, height, border, format, type, data ) \
+glTexSubImage2D( target, level, 0, 0, width, height, format, type, data )
+#else
+#define SOIL_glTexImage2D( target, level, internalformat, width, height, border, format, type, data ) \
+glTexImage2D( target, level, internalformat, width, height, border, format, type, data )
+#endif
 
 #ifdef _WIN64
 	#define WIN64_LEAN_AND_MEAN
@@ -1248,7 +1257,7 @@ unsigned int
 			} else
 			{
 				/*	my compression failed, try the OpenGL driver's version	*/
-				glTexImage2D(
+				SOIL_glTexImage2D(
 					opengl_texture_target, 0,
 					internal_texture_format, width, height, 0,
 					original_texture_format, GL_UNSIGNED_BYTE, img );
@@ -1258,7 +1267,7 @@ unsigned int
 		} else
 		{
 			/*	user want OpenGL to do all the work!	*/
-			glTexImage2D(
+			SOIL_glTexImage2D(
 				opengl_texture_target, 0,
 				internal_texture_format, width, height, 0,
 				original_texture_format, GL_UNSIGNED_BYTE, img );
@@ -1307,7 +1316,7 @@ unsigned int
 					} else
 					{
 						/*	my compression failed, try the OpenGL driver's version	*/
-						glTexImage2D(
+						SOIL_glTexImage2D(
 							opengl_texture_target, MIPlevel,
 							internal_texture_format, MIPwidth, MIPheight, 0,
 							original_texture_format, GL_UNSIGNED_BYTE, resampled );
@@ -1316,7 +1325,7 @@ unsigned int
 				} else
 				{
 					/*	user want OpenGL to do all the work!	*/
-					glTexImage2D(
+					SOIL_glTexImage2D(
 						opengl_texture_target, MIPlevel,
 						internal_texture_format, MIPwidth, MIPheight, 0,
 						original_texture_format, GL_UNSIGNED_BYTE, resampled );
@@ -1741,7 +1750,7 @@ unsigned int SOIL_direct_load_DDS_from_memory(
 					DDS_data[i] = DDS_data[i+2];
 					DDS_data[i+2] = temp;
 				}
-				glTexImage2D(
+				SOIL_glTexImage2D(
 					cf_target, 0,
 					S3TC_type, width, height, 0,
 					S3TC_type, GL_UNSIGNED_BYTE, DDS_data );
@@ -1770,7 +1779,7 @@ unsigned int SOIL_direct_load_DDS_from_memory(
 				if( uncompressed )
 				{
 					mip_size = w*h*block_size;
-					glTexImage2D(
+					SOIL_glTexImage2D(
 						cf_target, i,
 						S3TC_type, w, h, 0,
 						S3TC_type, GL_UNSIGNED_BYTE, &DDS_data[byte_offset] );
