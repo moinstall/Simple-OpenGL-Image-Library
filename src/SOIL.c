@@ -14,9 +14,9 @@
 */
 
 #define SOIL_CHECK_FOR_GL_ERRORS 0
-#define SOIL_USEGLTEXSUBIMAGE2D 1
+#define SOIL_USEGLTEXSUBIMAGE2D 0
 
-#ifdef SOIL_USEGLTEXSUBIMAGE2D
+#if SOIL_USEGLTEXSUBIMAGE2D
 #define SOIL_glTexImage2D( target, level, internalformat, width, height, border, format, type, data ) \
 glTexSubImage2D( target, level, 0, 0, width, height, format, type, data )
 #else
