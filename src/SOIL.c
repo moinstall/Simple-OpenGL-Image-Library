@@ -35,9 +35,14 @@ glTexImage2D( target, level, internalformat, width, height, border, format, type
 	#include <wingdi.h>
 	#include <GL/gl.h>
 #elif defined(__APPLE__) || defined(__APPLE_CC__)
-	/*	I can't test this Apple stuff!	*/
-	#include <OpenGL/gl.h>
-	#include <Carbon/Carbon.h>
+    #include "TargetConditionals.h"
+	#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+		#include <CoreFoundation/CFBundle.h>
+		#include <OpenGLES/ES1/gl.h>
+	#else
+		#include <OpenGL/gl.h>
+		#include <Carbon/Carbon.h>
+	#endif
 	#define APIENTRY
 #elif defined(__ANDROID__)
 	#include <GLES/gl.h>
@@ -56,6 +61,7 @@ glTexImage2D( target, level, internalformat, width, height, border, format, type
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 /*	error reporting	*/
 char *result_string_pointer = "SOIL initialized";
