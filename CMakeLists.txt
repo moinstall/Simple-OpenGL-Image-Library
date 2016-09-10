@@ -3,7 +3,7 @@ project (SOIL)
 
 set (SOIL_BUILD_TESTS false CACHE BOOL "Build tests")
 
-if(ANDROID)
+if(ANDROID OR IOS)
   # Android requires GL ES 2.0 package automatically
   set(LIBRARIES GLESv2)
 else()
