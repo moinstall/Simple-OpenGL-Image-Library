@@ -1019,7 +1019,7 @@ unsigned int
 	unsigned int tex_id;
 	unsigned int internal_texture_format = 0, original_texture_format = 0;
 	int DXT_mode = SOIL_CAPABILITY_UNKNOWN;
-	int max_supported_size;
+	int max_supported_size = 0;
 	/*	If the user wants to use the texture rectangle I kill a few flags	*/
 	if( flags & SOIL_FLAG_TEXTURE_RECTANGLE )
 	{
@@ -1112,71 +1112,79 @@ unsigned int
 	/*	how large of a texture can this OpenGL implementation handle?	*/
 	/*	texture_check_size_enum will be GL_MAX_TEXTURE_SIZE or SOIL_MAX_CUBE_MAP_TEXTURE_SIZE	*/
 	glGetIntegerv( texture_check_size_enum, &max_supported_size );
-	/*	do I need to make it a power of 2?	*/
-	if(
-		(flags & SOIL_FLAG_POWER_OF_TWO) ||	/*	user asked for it	*/
-		(flags & SOIL_FLAG_MIPMAPS) ||		/*	need it for the MIP-maps	*/
-		(width > max_supported_size) ||		/*	it's too big, (make sure it's	*/
-		(height > max_supported_size) )		/*	2^n for later down-sampling)	*/
+	
+ 	/*	max_supported_size == 0 when no gl context initialized (just single case)
+		let's check this and not allow do any image resample in this case
+		otherwise we get div0 exception
+	*/
+	if( max_supported_size )
 	{
-		int new_width = 1;
-		int new_height = 1;
-		while( new_width < width )
+	 	/*	do I need to make it a power of 2?	*/
+		if(
+			(flags & SOIL_FLAG_POWER_OF_TWO) ||	/*	user asked for it	*/
+			(flags & SOIL_FLAG_MIPMAPS) ||		/*	need it for the MIP-maps	*/
+			(width > max_supported_size) ||		/*	it's too big, (make sure it's	*/
+			(height > max_supported_size) )		/*	2^n for later down-sampling)	*/
 		{
-			new_width *= 2;
+			int new_width = 1;
+			int new_height = 1;
+			while( new_width < width )
+			{
+				new_width *= 2;
+			}
+			while( new_height < height )
+			{
+				new_height *= 2;
+			}
+			/*	still?	*/
+			if( (new_width != width) || (new_height != height) )
+			{
+				/*	yep, resize	*/
+				unsigned char *resampled = (unsigned char*)malloc( channels*new_width*new_height );
+				up_scale_image(
+						img, width, height, channels,
+						resampled, new_width, new_height );
+				/*	OJO	this is for debug only!	*/
+				/*
+				SOIL_save_image( "\\showme.bmp", SOIL_SAVE_TYPE_BMP,
+								new_width, new_height, channels,
+								resampled );
+				*/
+				/*	nuke the old guy, then point it at the new guy	*/
+				SOIL_free_image_data( img );
+				img = resampled;
+				width = new_width;
+				height = new_height;
+			}
 		}
-		while( new_height < height )
+		/*	now, if it is too large...	*/
+		if( (width > max_supported_size) || (height > max_supported_size) )
 		{
-			new_height *= 2;
-		}
-		/*	still?	*/
-		if( (new_width != width) || (new_height != height) )
-		{
-			/*	yep, resize	*/
-			unsigned char *resampled = (unsigned char*)malloc( channels*new_width*new_height );
-			up_scale_image(
-					img, width, height, channels,
-					resampled, new_width, new_height );
-			/*	OJO	this is for debug only!	*/
-			/*
-			SOIL_save_image( "\\showme.bmp", SOIL_SAVE_TYPE_BMP,
-							new_width, new_height, channels,
-							resampled );
-			*/
+			/*	I've already made it a power of two, so simply use the MIPmapping
+				code to reduce its size to the allowable maximum.	*/
+			unsigned char *resampled;
+			int reduce_block_x = 1, reduce_block_y = 1;
+			int new_width, new_height;
+			if( width > max_supported_size )
+			{
+				reduce_block_x = width / max_supported_size;
+			}
+			if( height > max_supported_size )
+			{
+				reduce_block_y = height / max_supported_size;
+			}
+			new_width = width / reduce_block_x;
+			new_height = height / reduce_block_y;
+			resampled = (unsigned char*)malloc( channels*new_width*new_height );
+			/*	perform the actual reduction	*/
+			mipmap_image(	img, width, height, channels,
+							resampled, reduce_block_x, reduce_block_y );
 			/*	nuke the old guy, then point it at the new guy	*/
 			SOIL_free_image_data( img );
 			img = resampled;
 			width = new_width;
 			height = new_height;
 		}
-	}
-	/*	now, if it is too large...	*/
-	if( (width > max_supported_size) || (height > max_supported_size) )
-	{
-		/*	I've already made it a power of two, so simply use the MIPmapping
-			code to reduce its size to the allowable maximum.	*/
-		unsigned char *resampled;
-		int reduce_block_x = 1, reduce_block_y = 1;
-		int new_width, new_height;
-		if( width > max_supported_size )
-		{
-			reduce_block_x = width / max_supported_size;
-		}
-		if( height > max_supported_size )
-		{
-			reduce_block_y = height / max_supported_size;
-		}
-		new_width = width / reduce_block_x;
-		new_height = height / reduce_block_y;
-		resampled = (unsigned char*)malloc( channels*new_width*new_height );
-		/*	perform the actual reduction	*/
-		mipmap_image(	img, width, height, channels,
-						resampled, reduce_block_x, reduce_block_y );
-		/*	nuke the old guy, then point it at the new guy	*/
-		SOIL_free_image_data( img );
-		img = resampled;
-		width = new_width;
-		height = new_height;
 	}
 	/*	does the user want us to use YCoCg color space?	*/
 	if( flags & SOIL_FLAG_CoCg_Y )
