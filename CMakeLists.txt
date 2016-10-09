@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project (SOIL)
 
 set (SOIL_BUILD_TESTS false CACHE BOOL "Build tests")
+set (SOIL_INSTALL false CACHE BOOL "Install library")
 
 if(ANDROID OR IOS)
   # Android requires GL ES 2.0 package automatically
@@ -18,10 +19,12 @@ file (GLOB SOIL_HEADERS src/*.h)
 add_library (SOIL ${SOIL_SOURCES} ${SOIL_HEADERS})
 target_link_libraries (SOIL ${LIBRARIES})
 
-install (TARGETS SOIL
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib)
-install (FILES ${SOIL_HEADERS} DESTINATION include/SOIL)
+if (SOIL_INSTALL)
+	install (TARGETS SOIL
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib)
+	install (FILES ${SOIL_HEADERS} DESTINATION include/SOIL)
+endif ()
 
 if (SOIL_BUILD_TESTS)
 	add_executable (test_SOIL src/test_SOIL.cpp)
