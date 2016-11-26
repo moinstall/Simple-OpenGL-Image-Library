@@ -1244,6 +1244,11 @@ unsigned int
 		/*  bind an OpenGL texture ID	*/
 		glBindTexture( opengl_texture_type, tex_id );
 		check_for_GL_errors( "glBindTexture" );
+
+		/* calculate alignment */
+		// http://stackoverflow.com/questions/8518861/opengl-es-2-0-ios-skewed-drawing-of-rgba4-texture
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
 		/*  upload the main image	*/
 		if( DXT_mode == SOIL_CAPABILITY_PRESENT )
 		{
