@@ -1936,16 +1936,14 @@ int query_tex_rectangle_capability( void )
 	/*	check for the capability	*/
 	if( has_tex_rectangle_capability == SOIL_CAPABILITY_UNKNOWN )
 	{
+		char const* ext = (char const*)glGetString( GL_EXTENSIONS );
 		/*	we haven't yet checked for the capability, do so	*/
-		if(
-			(NULL == strstr( (char const*)glGetString( GL_EXTENSIONS ),
-				"GL_ARB_texture_rectangle" ) )
+		if( ext &&
+			(NULL == strstr( ext, "GL_ARB_texture_rectangle" ) )
 		&&
-			(NULL == strstr( (char const*)glGetString( GL_EXTENSIONS ),
-				"GL_EXT_texture_rectangle" ) )
+			(NULL == strstr( ext, "GL_EXT_texture_rectangle" ) )
 		&&
-			(NULL == strstr( (char const*)glGetString( GL_EXTENSIONS ),
-				"GL_NV_texture_rectangle" ) )
+			(NULL == strstr( ext, "GL_NV_texture_rectangle" ) )
 			)
 		{
 			/*	not there, flag the failure	*/
@@ -1965,13 +1963,13 @@ int query_cubemap_capability( void )
 	/*	check for the capability	*/
 	if( has_cubemap_capability == SOIL_CAPABILITY_UNKNOWN )
 	{
+		char const* ext = (char const*)glGetString( GL_EXTENSIONS );
+
 		/*	we haven't yet checked for the capability, do so	*/
-		if(
-			(NULL == strstr( (char const*)glGetString( GL_EXTENSIONS ),
-				"GL_ARB_texture_cube_map" ) )
+		if( ext &&
+			(NULL == strstr( ext, "GL_ARB_texture_cube_map" ) )
 		&&
-			(NULL == strstr( (char const*)glGetString( GL_EXTENSIONS ),
-				"GL_EXT_texture_cube_map" ) )
+			(NULL == strstr( ext, "GL_EXT_texture_cube_map" ) )
 		#ifdef GL_ES_VERSION_2_0
 		&& (0) /* GL ES 2.0 supports cubemaps, always enable */
 		#endif
@@ -1994,10 +1992,10 @@ int query_DXT_capability( void )
 	/*	check for the capability	*/
 	if( has_DXT_capability == SOIL_CAPABILITY_UNKNOWN )
 	{
+		char const * ext = (char const*)glGetString( GL_EXTENSIONS );
+
 		/*	we haven't yet checked for the capability, do so	*/
-		if( NULL == strstr(
-				(char const*)glGetString( GL_EXTENSIONS ),
-				"GL_EXT_texture_compression_s3tc" ) )
+		if( ext && NULL == strstr( ext, "GL_EXT_texture_compression_s3tc" ) )
 		{
 			/*	not there, flag the failure	*/
 			has_DXT_capability = SOIL_CAPABILITY_NONE;
