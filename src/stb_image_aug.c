@@ -78,7 +78,9 @@
 #include <assert.h>
 #include <stdarg.h>
 
+// https://github.com/nothings/stb/issues/116
 #ifndef _MSC_VER
+  #undef __forceinline
   #ifdef __cplusplus
   #define __forceinline inline
   #else
